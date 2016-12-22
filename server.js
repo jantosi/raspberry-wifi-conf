@@ -1,7 +1,9 @@
 var async               = require("async"),
     wifi_manager        = require("./app/wifi_manager")(),
     dependency_manager  = require("./app/dependency_manager")(),
-    config              = require("./config.json");
+    config              = require("./config.json"),
+    GPIO = require('onoff').Gpio,
+    button = new GPIO(18, 'in', 'both');
 
 /*****************************************************************************\
     1. Check for dependencies
@@ -18,6 +20,26 @@ var async               = require("async"),
     7. At this stage, the RPI is named, and has a valid wifi connection which
        its bound to, reboot the pi and re-run this script on startup.
 \*****************************************************************************/
+
+function buttonCallback(err, state) {
+  // check the state of the button
+  // 1 == pressed, 0 == not pressed
+  if(state == 1) {
+    console.log('pressed');
+
+            wifi_manager.enable_ap_mode(config.access_point.ssid, function(error) {
+                if(error) {
+                    console.log("BUTTON... AP Enable ERROR: " + error);
+                } else {
+                    console.log("BUTTON... AP Enable Success!");
+                }
+            });
+
+  } else {
+    console.log('unpressed');
+  }
+}
+
 async.series([
 
     // 1. Check if we have the required dependencies installed
@@ -36,7 +58,10 @@ async.series([
         wifi_manager.is_wifi_enabled(function(error, result_ip) {
             if (result_ip) {
                 console.log("\nWifi is enabled, and IP " + result_ip + " assigned");
-                process.exit(0);
+                if(config.button != 'on') {
+console.log('nonuscire!');
+                    process.exit(0);
+                }
             } else {
                 console.log("\nWifi is not enabled, Enabling AP for self-configure");
             }
@@ -46,17 +71,27 @@ async.series([
 
     // 3. Turn RPI into an access point
     function enable_rpi_ap(next_step) {
-        wifi_manager.enable_ap_mode(config.access_point.ssid, function(error) {
-            if(error) {
-                console.log("... AP Enable ERROR: " + error);
-            } else {
-                console.log("... AP Enable Success!");
-            }
-            next_step(error);
-        });
+        if(config.button != 'on') {
+            wifi_manager.enable_ap_mode(config.access_point.ssid, function(error) {
+                if(error) {
+                    console.log("... AP Enable ERROR: " + error);
+                } else {
+                    console.log("... AP Enable Success!");
+                }
+            });
+        }
+        next_step('');
     },
 
-    // 4. Host HTTP server while functioning as AP, the "api.js"
+    // 4. attach a callback that check if the button is pressed
+    function button_check(next_step) {
+	if(config.button == 'on') {
+            button.watch(buttonCallback);        
+        }
+        next_step('');
+    },
+
+    // 5. Host HTTP server while functioning as AP, the "api.js"
     //    file contains all the needed logic to get a basic express
     //    server up. It uses a small angular application which allows
     //    us to choose the wifi of our choosing.

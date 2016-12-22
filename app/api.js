@@ -67,8 +67,12 @@ module.exports = function(wifi_manager, callback) {
                 response.redirect("/");
             }
             // Success! - exit
-            console.log("Wifi Enabled! - Exiting");
-            process.exit(0);
+            if(config.button == 'on') {
+                console.log("Wifi Enabled!");
+            }else{
+                console.log("Wifi Enabled! - Exiting");
+                process.exit(0);
+            }
         });
     });
 
