@@ -21,17 +21,32 @@ var async               = require("async"),
        its bound to, reboot the pi and re-run this script on startup.
 \*****************************************************************************/
 
+var configuring = 0;
+
 function buttonCallback(err, state) {
   // check the state of the button
   // 1 == pressed, 0 == not pressed
-  if(state == 1) {
+    console.log('conf:'+configuring);
+  if( (state == 1) && (configuring == 0) ) {
     console.log('pressed');
+	configuring = 1;
 
             wifi_manager.enable_ap_mode(config.access_point.ssid, function(error) {
                 if(error) {
                     console.log("BUTTON... AP Enable ERROR: " + error);
                 } else {
                     console.log("BUTTON... AP Enable Success!");
+/*
+            wifi_manager.enable_ap_mode(config.access_point.ssid, function(error) {
+                if(error) {
+                    console.log("BUTTON2... AP Enable ERROR: " + error);
+                } else {
+                    console.log("BUTTON2... AP Enable Success!");
+                }
+            });
+*/
+	configuring = 0;
+
                 }
             });
 
