@@ -1,9 +1,10 @@
 var async               = require("async"),
     wifi_manager        = require("./app/wifi_manager")(),
     dependency_manager  = require("./app/dependency_manager")(),
+    exec                = require("child_process").exec,
     config              = require("./config.json"),
-    GPIO = require('onoff').Gpio,
-    button = new GPIO(18, 'in', 'both');
+    GPIO                = require('onoff').Gpio,
+    button              = new GPIO(18, 'in', 'both');
 
 /*****************************************************************************\
     1. Check for dependencies
@@ -26,33 +27,26 @@ var configuring = 0;
 function buttonCallback(err, state) {
   // check the state of the button
   // 1 == pressed, 0 == not pressed
-    console.log('conf:'+configuring);
+  // console.log('conf:'+configuring);
   if( (state == 1) && (configuring == 0) ) {
-    console.log('pressed');
-	configuring = 1;
+     console.log('pressed');
+     configuring = 1;
+     wifi_manager.enable_ap_mode(config.access_point.ssid, function(error) {
+       if(error) {
+         console.log("BUTTON... AP Enable ERROR: " + error);
+       }else{
+         console.log("BUTTON... AP Enable Success!");
+	  configuring = 0;
+          exec("systemctl enable hostapd.service", function(error, stdout, stderr) { });
+          exec("systemctl enable isc-dhcp-server.service", function(error, stdout, stderr) { });
+          exec("systemctl disable wpa_supplicant.service", function(error, stdout, stderr) { });
+	  exec("reboot", function(error, stdout, stderr) { });
+       }
+     });
 
-            wifi_manager.enable_ap_mode(config.access_point.ssid, function(error) {
-                if(error) {
-                    console.log("BUTTON... AP Enable ERROR: " + error);
-                } else {
-                    console.log("BUTTON... AP Enable Success!");
-/*
-            wifi_manager.enable_ap_mode(config.access_point.ssid, function(error) {
-                if(error) {
-                    console.log("BUTTON2... AP Enable ERROR: " + error);
-                } else {
-                    console.log("BUTTON2... AP Enable Success!");
-                }
-            });
-*/
-	configuring = 0;
-
-                }
-            });
-
-  } else {
+  } /* else {
     console.log('unpressed');
-  }
+  }*/
 }
 
 async.series([
@@ -74,7 +68,6 @@ async.series([
             if (result_ip) {
                 console.log("\nWifi is enabled, and IP " + result_ip + " assigned");
                 if(config.button != 'on') {
-console.log('nonuscire!');
                     process.exit(0);
                 }
             } else {
@@ -97,6 +90,7 @@ console.log('nonuscire!');
         }
         next_step('');
     },
+
 
     // 4. attach a callback that check if the button is pressed
     function button_check(next_step) {
