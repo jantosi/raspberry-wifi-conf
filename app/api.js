@@ -4,6 +4,7 @@ var path       = require("path"),
     express    = require("express"),
     bodyParser = require('body-parser'),
     config     = require("../config.json"),
+    exec       = require("child_process").exec,
     http_test  = config.http_test_only;
 
 // Helper function to log errors and send a generic status "SUCCESS"
@@ -67,8 +68,16 @@ module.exports = function(wifi_manager, callback) {
                 response.redirect("/");
             }
             // Success! - exit
-            console.log("Wifi Enabled! - Exiting");
-            process.exit(0);
+            if(config.button == 'on') {
+                console.log("Wifi Enabled!");
+                exec("systemctl disable hostapd.service", function(error, stdout, stderr) { });
+                exec("systemctl disable isc-dhcp-server.service", function(error, stdout, stderr) { });
+                exec("systemctl enable wpa_supplicant.service", function(error, stdout, stderr) { });
+                exec("reboot", function(error, stdout, stderr) { });
+            }else{
+                console.log("Wifi Enabled! - Exiting");
+                process.exit(0);
+            }
         });
     });
 
