@@ -6,7 +6,7 @@
         "force_reconfigure": true,
         "wifi_interface":    "wlan0",
         "ssid":              "rpi-config-ap",
-        "passphrase":        "zzzzzzzz",
+        "passphrase":        "freefreefree",
         "domain":            "rpi.config",
         "ip_addr":           "192.168.44.1",
         "netmask":           "255.255.255.0",
@@ -17,6 +17,8 @@
             "end":           "192.168.44.50"
         }
     },
+
+    "button": "on",
 
     "server": {
         "port": 88
