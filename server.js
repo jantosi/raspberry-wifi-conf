@@ -79,7 +79,7 @@ async.series([
 
     // 3. Turn RPI into an access point
     function enable_rpi_ap(next_step) {
-        if(config.button != 'on') {
+        if(true) { //config.button != 'on') { // button is not interesting
             wifi_manager.enable_ap_mode(config.access_point.ssid, function(error) {
                 if(error) {
                     console.log("... AP Enable ERROR: " + error);
