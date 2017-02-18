@@ -59,6 +59,8 @@ module.exports = function() {
         var output = {
             hw_addr:      "<unknown>",
             inet_addr:    "<unknown>",
+            ap_addr:    "<unknown>",
+            ap_ssid:    "<unknown>",
             unassociated: "<unknown>",
         };
 
@@ -114,7 +116,8 @@ module.exports = function() {
         // inet_addr - wifi is enabled!
         if (null        == _is_ap_enabled_sync(info) &&
             "<unknown>" != info["inet_addr"]         &&
-            "<unknown>" == info["unassociated"] ) {
+            "<unknown>" == info["unassociated"] &&
+            "<unknown>" != info["ap_ssid"] ) {
             return info["inet_addr"];
         }
         return null;
@@ -135,7 +138,9 @@ module.exports = function() {
 	// console.log(info["ap_addr"]);
         var is_ap  =
             info["hw_addr"].toLowerCase() == info["ap_addr"].toLowerCase() &&
-            info["ap_ssid"] == config.access_point.ssid;
+            info["ap_ssid"] == config.access_point.ssid &&
+            info["ap_ssid"] != "<unknown>";
+            
         return (is_ap) ? info["hw_addr"].toLowerCase() : null;
     },
 
