@@ -68,7 +68,7 @@ module.exports = function(wifi_manager, callback) {
                 response.redirect("/");
             }
             // Success! - exit
-            if(config.button == 'on') {
+            if(true) {
                 console.log("Wifi Enabled!");
                 exec("systemctl disable hostapd.service", function(error, stdout, stderr) { });
                 exec("systemctl disable isc-dhcp-server.service", function(error, stdout, stderr) { });
