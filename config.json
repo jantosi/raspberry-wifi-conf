@@ -21,6 +21,6 @@
     "button": "off",
 
     "server": {
-        "port": 88
+        "port": 80
     }
 }
